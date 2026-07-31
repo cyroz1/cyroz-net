@@ -4,9 +4,14 @@ Source code for [cyroz.net](https://cyroz.net/).
 
 ## Pages
 - `index.html` - main links page
-- `beats.html` - beats page
-- `setup.html` - setup page
-- `settings.html` - settings/downloads page
+- `beats/index.html` - beats page
+- `setup/index.html` - setup page
+- `camera/index.html` - camera setup page
+- `settings/index.html` - settings/downloads page
+
+Legacy `.html` URLs and the old `/vidcord/` shortcut are handled by the
+Cloudflare `_redirects` file and return permanent redirects to their canonical
+destinations.
 
 ## Local Preview
 Install dependencies and build the static Worker assets:

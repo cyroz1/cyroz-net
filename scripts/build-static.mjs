@@ -6,11 +6,10 @@ const outDir = path.join(root, "dist");
 
 const entries = [
   "404.html",
+  "_redirects",
   "assets",
   "beats",
-  "beats.html",
   "camera",
-  "camera.html",
   "css",
   "favicon.ico",
   "favicon.svg",
@@ -20,11 +19,8 @@ const entries = [
   "js",
   "robots.txt",
   "settings",
-  "settings.html",
   "setup",
-  "setup.html",
-  "sitemap.xml",
-  "vidcord"
+  "sitemap.xml"
 ];
 
 await rm(outDir, { recursive: true, force: true });

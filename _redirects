@@ -1,0 +1,8 @@
+# Keep legacy file URLs and the old Vidcord shortcut out of the index.
+/beats.html /beats/ 301
+/setup.html /setup/ 301
+/camera.html /camera/ 301
+/settings.html /settings/ 301
+/vidcord https://vidcord.app 301
+/vidcord/ https://vidcord.app 301
+/vidcord/index.html https://vidcord.app 301
