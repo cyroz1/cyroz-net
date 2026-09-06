@@ -1,8 +1,24 @@
-# Keep legacy file URLs and the old Vidcord shortcut out of the index.
+# Keep non-canonical page URLs out of the index with permanent redirects.
+/index / 301
+/index.html / 301
+/beats /beats/ 301
 /beats.html /beats/ 301
+/beats/index /beats/ 301
+/beats/index.html /beats/ 301
+/setup /setup/ 301
 /setup.html /setup/ 301
+/setup/index /setup/ 301
+/setup/index.html /setup/ 301
+/camera /camera/ 301
 /camera.html /camera/ 301
+/camera/index /camera/ 301
+/camera/index.html /camera/ 301
+/settings /settings/ 301
 /settings.html /settings/ 301
+/settings/index /settings/ 301
+/settings/index.html /settings/ 301
+
+# Keep the old Vidcord shortcut out of the index.
 /vidcord https://vidcord.app 301
 /vidcord/ https://vidcord.app 301
 /vidcord/index.html https://vidcord.app 301
