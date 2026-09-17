@@ -2,13 +2,23 @@ const CUSTOM_404_PATH = /^\/404(?:\.html|\/?)$/;
 const CANONICAL_HOST = "cyroz.net";
 const WWW_HOST = `www.${CANONICAL_HOST}`;
 
+function isHttpRequest(request, url) {
+  if (url.protocol === "http:") return true;
+
+  try {
+    return JSON.parse(request.headers.get("CF-Visitor") ?? "{}").scheme === "http";
+  } catch {
+    return false;
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
     if (
       url.hostname === WWW_HOST ||
-      (url.hostname === CANONICAL_HOST && url.protocol !== "https:")
+      (url.hostname === CANONICAL_HOST && isHttpRequest(request, url))
     ) {
       url.hostname = CANONICAL_HOST;
       url.protocol = "https:";
