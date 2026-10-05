@@ -229,11 +229,11 @@ function initPlayers() {
         return `${mins}:${secs}`;
     }
 
-    function prepareVisualizerCanvas(canvas) {
+    function prepareVisualizerCanvas(canvas, highResolution = false) {
         const ctx = canvas && canvas.getContext('2d');
         if (!ctx) return null;
 
-        const ratio = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+        const ratio = highResolution ? Math.max(1, Math.min(window.devicePixelRatio || 1, 2)) : 1;
         const width = Math.max(1, Math.round(canvas.clientWidth || canvas.width));
         const height = Math.max(1, Math.round(canvas.clientHeight || canvas.height));
         const scaledWidth = Math.round(width * ratio);
@@ -411,8 +411,8 @@ function initPlayers() {
         ctx.shadowBlur = 0;
     }
 
-    function drawOscilloscope(canvas, state = null, data = null) {
-        const prepared = prepareVisualizerCanvas(canvas);
+    function drawOscilloscope(canvas, state = null, data = null, highResolution = false) {
+        const prepared = prepareVisualizerCanvas(canvas, highResolution);
         if (!prepared) return;
         const { ctx, width, height } = prepared;
         drawOscilloscopeGrid(ctx, width, height);
@@ -491,7 +491,7 @@ function initPlayers() {
             if (now - lastFrameTime < OSCILLOSCOPE_FRAME_MS) return;
             lastFrameTime = now - ((now - lastFrameTime) % OSCILLOSCOPE_FRAME_MS);
             analyser.getByteTimeDomainData(waveformData);
-            drawOscilloscope(canvas, oscilloscopeState, waveformData);
+            drawOscilloscope(canvas, oscilloscopeState, waveformData, true);
         }
 
         stopVisualizer();
@@ -615,8 +615,20 @@ function initPlayers() {
         syncPlayerUi(wrapper, audio);
     }
 
+    const idleVisualizerObserver = typeof IntersectionObserver === 'function'
+        ? new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                drawIdleVisualizer(entry.target);
+                idleVisualizerObserver.unobserve(entry.target);
+            });
+        }, { rootMargin: '300px 0px' })
+        : null;
+
     wrappers.forEach(wrapper => {
-        drawIdleVisualizer(wrapper.querySelector('.visualizer'));
+        const canvas = wrapper.querySelector('.visualizer');
+        if (idleVisualizerObserver) idleVisualizerObserver.observe(canvas);
+        else drawIdleVisualizer(canvas);
 
         const button = wrapper.querySelector('.player-button');
         const progress = wrapper.querySelector('.player-progress');

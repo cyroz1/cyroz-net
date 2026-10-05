@@ -16,9 +16,25 @@
   let frameId = 0;
 
   const animate = () => {
-    cx += (tx - cx) * 0.08;
-    cy += (ty - cy) * 0.08;
+    const dx = tx - cx;
+    const dy = ty - cy;
+    const isSettled = Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1;
+
+    if (isSettled) {
+      cx = tx;
+      cy = ty;
+    } else {
+      cx += dx * 0.08;
+      cy += dy * 0.08;
+    }
+
     cursor.style.transform = `translate(${cx - 200}px, ${cy - 200}px)`;
+
+    if (isSettled) {
+      frameId = 0;
+      return;
+    }
+
     frameId = requestAnimationFrame(animate);
   };
 
@@ -32,6 +48,8 @@
     if (document.hidden && frameId) {
       cancelAnimationFrame(frameId);
       frameId = 0;
+    } else if (!document.hidden && !frameId && (Math.abs(tx - cx) > 0.1 || Math.abs(ty - cy) > 0.1)) {
+      frameId = requestAnimationFrame(animate);
     }
   });
 })();
