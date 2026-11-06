@@ -3,7 +3,7 @@
   "name": "cyroz",
   "main": "./worker.js",
   "compatibility_date": "2026-06-28",
-  "workers_dev": true,
+  "workers_dev": false,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
