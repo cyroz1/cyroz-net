@@ -47,7 +47,8 @@ function paypalUrl(beatName, price) {
 }
 
 function driveMediaUrl(fileId) {
-    return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${CONFIG.API_KEY}`;
+    const safeId = String(fileId || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    return `https://www.googleapis.com/drive/v3/files/${safeId}?alt=media&key=${CONFIG.API_KEY}`;
 }
 
 function formatModifiedDate(isoString) {
