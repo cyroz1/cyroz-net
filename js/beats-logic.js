@@ -18,7 +18,8 @@ const OSCILLOSCOPE_TARGET_PEAK = 0.26;
 const OSCILLOSCOPE_MIN_PEAK = 0.025;
 const OSCILLOSCOPE_MIN_GAIN = 0.45;
 const OSCILLOSCOPE_MAX_GAIN = 5;
-const OSCILLOSCOPE_GAIN_SMOOTHING = 0.18;
+const OSCILLOSCOPE_GAIN_SMOOTHING = 0.08;
+const OSCILLOSCOPE_TRIGGER_HYSTERESIS = 4;
 
 function beatNameFromFile(filename) {
     return filename.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -308,26 +309,32 @@ function initPlayers() {
             minTrigger,
             data.length - visibleSamples + Math.floor(pretriggerSamples) - 2
         );
-        const fallbackTrigger = Math.max(
+        const preferredTrigger = Math.max(
             minTrigger,
             Math.min(maxTrigger, Math.round(data.length * 0.35))
         );
+        const lowerThreshold = OSCILLOSCOPE_CENTER - OSCILLOSCOPE_TRIGGER_HYSTERESIS;
+        let bestTrigger = preferredTrigger;
+        let bestDistance = Infinity;
 
         for (let i = minTrigger; i <= maxTrigger; i++) {
             const previous = data[i - 1] - OSCILLOSCOPE_CENTER;
             const current = data[i] - OSCILLOSCOPE_CENTER;
-            if (previous > 0 || current <= 0) continue;
-
             const before = data[Math.max(0, i - 4)];
             const after = data[Math.min(data.length - 1, i + 4)];
-            if (after <= before) continue;
+            if (previous > 0 || current <= 0 || before > lowerThreshold || after <= before) continue;
 
             const delta = data[i] - data[i - 1];
             const crossingOffset = delta ? (OSCILLOSCOPE_CENTER - data[i - 1]) / delta : 1;
-            return i - 1 + Math.max(0, Math.min(1, crossingOffset));
+            const triggerIndex = i - 1 + Math.max(0, Math.min(1, crossingOffset));
+            const distance = Math.abs(triggerIndex - preferredTrigger);
+            if (distance < bestDistance) {
+                bestTrigger = triggerIndex;
+                bestDistance = distance;
+            }
         }
 
-        return fallbackTrigger;
+        return bestTrigger;
     }
 
     function measureOscilloscopePeak(data, startIndex, visibleSamples, points) {
@@ -488,15 +495,16 @@ function initPlayers() {
         let lastFrameTime = 0;
 
         function render(now = 0) {
+            if (now - lastFrameTime >= OSCILLOSCOPE_FRAME_MS) {
+                lastFrameTime = now - ((now - lastFrameTime) % OSCILLOSCOPE_FRAME_MS);
+                analyser.getByteTimeDomainData(waveformData);
+                drawOscilloscope(canvas, oscilloscopeState, waveformData, true);
+            }
             animationFrame = requestAnimationFrame(render);
-            if (now - lastFrameTime < OSCILLOSCOPE_FRAME_MS) return;
-            lastFrameTime = now - ((now - lastFrameTime) % OSCILLOSCOPE_FRAME_MS);
-            analyser.getByteTimeDomainData(waveformData);
-            drawOscilloscope(canvas, oscilloscopeState, waveformData, true);
         }
 
         stopVisualizer();
-        render();
+        animationFrame = requestAnimationFrame(render);
     }
 
     function syncPlayerUi(wrapper, audio) {
